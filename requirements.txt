@@ -1,0 +1,14 @@
+eumdac
+satpy
+pyresample
+pyproj
+xarray
+zarr
+netCDF4
+numpy
+dask
+matplotlib
+cartopy
+pandas
+tqdm
+python-dotenv
