@@ -26,22 +26,24 @@ def process_file(path):
     return pd.Timestamp(scn.start_time), stack, x[0], y[:, 0]
 
 
-def append_frame(t, stack, x, y):
+def append_frames(times, stack, x, y, path=config.ZARR_PATH, source=config.COLLECTION, dtype="float32"):
+    """Append frames (T, channel, y, x) to a zarr store, creating it on first use."""
     ds = xr.Dataset(
-        {"data": (("time", "channel", "y", "x"), stack[None])},
-        coords={"time": [t], "channel": config.CHANNELS, "y": y, "x": x},
+        {"data": (("time", "channel", "y", "x"), stack)},
+        coords={"time": list(times), "channel": config.CHANNELS, "y": y, "x": x},
     )
-    if not config.ZARR_PATH.exists():
-        ds.attrs.update(area=config.AREA.crs.to_wkt(), collection=config.COLLECTION,
+    if not path.exists():
+        ds.attrs.update(area=config.AREA.crs.to_wkt(), collection=source,
                         units="K (IR/WV), % (VIS)")
         ds = ds.chunk({"time": 1, "channel": -1, "y": -1, "x": -1})
         # fixed time units: otherwise xarray picks "days since <first frame>" and appended
         # 5-minute steps get silently mis-encoded
-        ds.to_zarr(config.ZARR_PATH, mode="w",
-                   encoding={"time": {"units": "seconds since 2000-01-01", "dtype": "int64"}})
+        ds.to_zarr(path, mode="w",
+                   encoding={"time": {"units": "seconds since 2000-01-01", "dtype": "int64"},
+                             "data": {"dtype": dtype}})
     else:
         # static coords are already stored; only the time axis grows
-        ds.drop_vars(["channel", "y", "x"]).to_zarr(config.ZARR_PATH, append_dim="time")
+        ds.drop_vars(["channel", "y", "x"]).chunk({"time": 1}).to_zarr(path, append_dim="time")
 
 
 def main():
@@ -68,7 +70,7 @@ def main():
         if t in done:
             tqdm.write(f"  {t} already stored, skipping")
         else:
-            append_frame(t, stack, x, y)
+            append_frames([t], stack[None], x, y)
             done.add(t)
         if args.delete_raw:
             path.unlink()

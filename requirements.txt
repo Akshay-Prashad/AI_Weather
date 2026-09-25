@@ -12,3 +12,4 @@ cartopy
 pandas
 tqdm
 python-dotenv
+torch

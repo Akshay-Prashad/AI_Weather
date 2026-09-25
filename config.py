@@ -8,7 +8,8 @@ RAW_DIR = ROOT / "data" / "raw"
 PROCESSED_DIR = ROOT / "data" / "processed"
 CACHE_DIR = ROOT / "data" / "cache"          # resampling lookup tables
 QUICKLOOK_DIR = ROOT / "data" / "quicklook"
-ZARR_PATH = PROCESSED_DIR / "ireland_seviri.zarr"
+ZARR_PATH = PROCESSED_DIR / "ireland_seviri.zarr"            # live NRT data (collect.py)
+ARCHIVE_ZARR_PATH = PROCESSED_DIR / "archive_seviri.zarr"    # historical data (import_archive.py)
 
 # Rapid Scan Service: 5-minute scans of Europe (fallback: "EO:EUM:DAT:MSG:HRSEVIRI", 15-min full disk)
 COLLECTION = "EO:EUM:DAT:MSG:MSG15-RSS"
